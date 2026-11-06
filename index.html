@@ -270,7 +270,7 @@
       </div>
 
       <!-- TradingView Lightweight Chart Canvas Container -->
-      <div id="tv-widget-container" class="flex-1 w-full bg-[#0b0f17] relative">
+      <div id="tv-widget-container" class="flex-1 w-full bg-[#0b1018] relative min-h-[420px]">
         <!-- Rendered via LightweightCharts.createChart -->
       </div>
     </div>
@@ -509,8 +509,9 @@
           width: container.clientWidth || 800,
           height: container.clientHeight || 500,
           layout: {
-            background: { color: '#0b0f17' },
+            background: { type: 'solid', color: '#0b1018' },
             textColor: '#94a3b8',
+            fontSize: 12,
             fontFamily: 'Inter, sans-serif',
           },
           grid: {
@@ -519,16 +520,32 @@
           },
           crosshair: {
             mode: LightweightCharts.CrosshairMode.Normal,
+            vertLine: {
+              color: 'rgba(255, 255, 255, 0.2)',
+              width: 1,
+              style: 3,
+              labelBackgroundColor: '#161c24',
+            },
+            horzLine: {
+              color: 'rgba(255, 255, 255, 0.2)',
+              width: 1,
+              style: 3,
+              labelBackgroundColor: '#161c24',
+            },
           },
           rightPriceScale: {
-            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
+            autoScale: true,
             scaleMargins: {
               top: 0.1,
-              bottom: 0.25,
+              bottom: 0.2,
             },
           },
           timeScale: {
-            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
+            rightOffset: 8,
+            barSpacing: 7,
+            minBarSpacing: 3,
             timeVisible: false,
             secondsVisible: false,
           },
@@ -608,8 +625,12 @@
           }
         });
 
-        // Fit content
-        chart.timeScale().fitContent();
+        // Fit content with right margin
+        setTimeout(() => {
+          try {
+            chart.timeScale().fitContent();
+          } catch(e) {}
+        }, 60);
 
         // Auto-resize
         resizeObserver = new ResizeObserver(entries => {

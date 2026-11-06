@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NSE Swing & Momentum Screener | Daily Setups</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#22c55e',
+              600: '#16a34a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #0b0f17; color: #e2e8f0; }
+    .glass { background: rgba(18, 24, 38, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-card { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.06); }
+    .glow-green { box-shadow: 0 0 20px -5px rgba(34, 197, 94, 0.3); }
+    .glow-blue { box-shadow: 0 0 20px -5px rgba(59, 130, 246, 0.3); }
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b0f17; }
+    ::-webkit-scrollbar-thumb { background: #272f45; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3b4461; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- Top Navbar -->
+  <header class="sticky top-0 z-40 glass border-b border-slate-800/80 px-4 lg:px-8 py-3.5 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+        <i data-lucide="trending-up" class="w-5 h-5 text-slate-950 stroke-[2.5]"></i>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <h1 class="text-lg font-bold text-white tracking-tight">NSE Swing & Momentum Screener</h1>
+          <span class="px-2 py-0.5 text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">DAILY EOD</span>
+        </div>
+        <p class="text-xs text-slate-400 hidden sm:block">Automated Institutional Setups: Committed Buyers, M10 Pullbacks & RS Leaders</p>
+      </div>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center space-x-3 text-xs">
+      <div class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+        <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i>
+        <span>Updated: <strong id="last-updated" class="text-slate-200">Loading...</strong></span>
+      </div>
+      <a href="https://github.com" target="_blank" class="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition">
+        <i data-lucide="github" class="w-4 h-4"></i>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
+
+    <!-- KPI / Metric Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+      <div class="glass-card p-3.5 rounded-xl">
+        <div class="text-[11px] font-medium text-slate-400 flex items-center justify-between">
+          <span>Total Scanned</span>
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-slate-500"></i>
+        </div>
+        <div id="stat-total" class="text-xl font-bold text-white mt-1 font-mono">--</div>
+        <div class="text-[10px] text-slate-500 mt-0.5">NSE Equities</div>
+      </div>
+
+      <div class="glass-card p-3.5 rounded-xl border-emerald-500/20 bg-emerald-950/10">
+        <div class="text-[11px] font-medium text-emerald-400 flex items-center justify-between">
+          <span>Setups Matched</span>
+          <i data-lucide="zap" class="w-3.5 h-3.5 text-emerald-400"></i>
+        </div>
+        <div id="stat-matched" class="text-xl font-bold text-emerald-400 mt-1 font-mono">--</div>
+        <div class="text-[10px] text-emerald-500/80 mt-0.5">High Probability</div>
+      </div>
+
+      <div class="glass-card p-3.5 rounded-xl">
+        <div class="text-[11px] font-medium text-slate-400 flex items-center justify-between">
+          <span>Committed Buyers</span>
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        </div>
+        <div id="stat-cb" class="text-xl font-bold text-white mt-1 font-mono">--</div>
+        <div class="text-[10px] text-slate-500 mt-0.5">2x Vol + Body >=60%</div>
+      </div>
+
+      <div class="glass-card p-3.5 rounded-xl">
+        <div class="text-[11px] font-medium text-slate-400 flex items-center justify-between">
+          <span>M10 Pullback</span>
+          <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+        </div>
+        <div id="stat-m10" class="text-xl font-bold text-white mt-1 font-mono">--</div>
+        <div class="text-[10px] text-slate-500 mt-0.5">10 EMA Touch</div>
+      </div>
+
+      <div class="glass-card p-3.5 rounded-xl">
+        <div class="text-[11px] font-medium text-slate-400 flex items-center justify-between">
+          <span>52W High Breakout</span>
+          <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+        </div>
+        <div id="stat-52w" class="text-xl font-bold text-white mt-1 font-mono">--</div>
+        <div class="text-[10px] text-slate-500 mt-0.5">Within 2.5% of High</div>
+      </div>
+
+      <div class="glass-card p-3.5 rounded-xl">
+        <div class="text-[11px] font-medium text-slate-400 flex items-center justify-between">
+          <span>RS Leaders</span>
+          <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+        </div>
+        <div id="stat-rs" class="text-xl font-bold text-white mt-1 font-mono">--</div>
+        <div class="text-[10px] text-slate-500 mt-0.5">Outperforming Nifty</div>
+      </div>
+    </div>
+
+    <!-- Filter & Preset Toolbar -->
+    <div class="glass p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <!-- Preset Tabs -->
+      <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 md:pb-0 text-xs no-scrollbar">
+        <button onclick="setFilter('ALL')" id="tab-ALL" class="tab-btn px-3 py-1.5 rounded-lg font-medium transition bg-emerald-500 text-slate-950 font-semibold shadow-sm">
+          All Matches (<span id="count-all">0</span>)
+        </button>
+        <button onclick="setFilter('CB')" id="tab-CB" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+          🔥 Committed Buyers
+        </button>
+        <button onclick="setFilter('M10')" id="tab-M10" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+          🎯 M10 Pullback
+        </button>
+        <button onclick="setFilter('TANGLE')" id="tab-TANGLE" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+          🌀 EMA Tangle
+        </button>
+        <button onclick="setFilter('52W_HIGH')" id="tab-52W_HIGH" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+          🚀 52W High
+        </button>
+        <button onclick="setFilter('HIGH_RS')" id="tab-HIGH_RS" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+          📈 RS Leaders
+        </button>
+        <button onclick="setFilter('VOL_SHOCK')" id="tab-VOL_SHOCK" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+          ⚡ 3x+ Volume
+        </button>
+      </div>
+
+      <!-- Search & Quick Controls -->
+      <div class="flex items-center space-x-2.5">
+        <div class="relative w-full md:w-60">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input type="text" id="search-input" onkeyup="handleSearch()" placeholder="Search symbol..." class="w-full pl-9 pr-3 py-1.5 bg-slate-900/90 border border-slate-700/70 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition">
+        </div>
+        <button onclick="refreshData()" title="Reload Data" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/70 text-slate-300 hover:text-white transition">
+          <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Screener Table Card -->
+    <div class="glass rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-800 bg-slate-900/70 text-[11px] font-semibold text-slate-400 uppercase tracking-wider select-none">
+              <th onclick="sortTable('symbol')" class="py-3 px-4 cursor-pointer hover:text-white">Symbol <i data-lucide="arrow-up-down" class="inline w-3 h-3 ml-0.5 text-slate-600"></i></th>
+              <th onclick="sortTable('price')" class="py-3 px-3 text-right cursor-pointer hover:text-white">LTP (₹) <i data-lucide="arrow-up-down" class="inline w-3 h-3 ml-0.5 text-slate-600"></i></th>
+              <th onclick="sortTable('change_pct')" class="py-3 px-3 text-right cursor-pointer hover:text-white">Change % <i data-lucide="arrow-up-down" class="inline w-3 h-3 ml-0.5 text-slate-600"></i></th>
+              <th onclick="sortTable('rvol')" class="py-3 px-3 text-right cursor-pointer hover:text-white" title="Volume vs 20-Day SMA Volume">RVOL <i data-lucide="arrow-up-down" class="inline w-3 h-3 ml-0.5 text-slate-600"></i></th>
+              <th onclick="sortTable('clv')" class="py-3 px-3 text-right cursor-pointer hover:text-white" title="Close Location Value (Top Wick filter)">CLV <i data-lucide="arrow-up-down" class="inline w-3 h-3 ml-0.5 text-slate-600"></i></th>
+              <th onclick="sortTable('dist_52w_high')" class="py-3 px-3 text-right cursor-pointer hover:text-white" title="Distance from 52-Week High">52W Dist <i data-lucide="arrow-up-down" class="inline w-3 h-3 ml-0.5 text-slate-600"></i></th>
+              <th onclick="sortTable('rs_1m')" class="py-3 px-3 text-right cursor-pointer hover:text-white" title="Relative Strength vs Nifty (1 Month)">RS 1M <i data-lucide="arrow-up-down" class="inline w-3 h-3 ml-0.5 text-slate-600"></i></th>
+              <th class="py-3 px-4">Setups Matched</th>
+              <th onclick="sortTable('score')" class="py-3 px-3 text-center cursor-pointer hover:text-white">Score <i data-lucide="arrow-up-down" class="inline w-3 h-3 ml-0.5 text-slate-600"></i></th>
+              <th class="py-3 px-4 text-center">Charts</th>
+            </tr>
+          </thead>
+          <tbody id="table-body" class="divide-y divide-slate-800/60 text-xs">
+            <tr>
+              <td colspan="10" class="py-12 text-center text-slate-400">
+                <div class="inline-flex items-center space-x-2">
+                  <i data-lucide="loader-2" class="w-5 h-5 animate-spin text-emerald-400"></i>
+                  <span>Loading swing screener data...</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="hidden py-16 text-center text-slate-500">
+        <i data-lucide="inbox" class="w-10 h-10 mx-auto text-slate-600 mb-2 stroke-[1.5]"></i>
+        <p class="text-sm font-medium text-slate-400">No stocks match the selected filter.</p>
+        <p class="text-xs text-slate-600 mt-1">Try selecting 'All Matches' or clearing the search box.</p>
+      </div>
+
+      <!-- Footer count -->
+      <div class="px-4 py-3 bg-slate-900/50 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
+        <span>Showing <strong id="showing-count" class="text-slate-300 font-mono">0</strong> stocks</span>
+        <span>Powered by Open Cloud Pipeline &middot; Zero API Cost</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Interactive Chart Modal -->
+  <div id="chart-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+      <!-- Modal Header -->
+      <div class="p-3.5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold font-mono text-sm">
+            NSE
+          </div>
+          <div>
+            <h3 id="modal-ticker" class="text-base font-bold text-white tracking-wide">RELIANCE</h3>
+            <p id="modal-sub" class="text-xs text-slate-400">Daily Chart View</p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <a id="modal-tv-link" href="#" target="_blank" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 flex items-center space-x-1.5 transition">
+            <span>TradingView</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          </a>
+          <a id="modal-fyers-link" href="#" target="_blank" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-medium text-slate-950 font-semibold flex items-center space-x-1.5 transition">
+            <span>Trade on FYERS</span>
+            <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+          </a>
+          <button onclick="closeModal()" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- TradingView Widget Container -->
+      <div id="tv-widget-container" class="flex-1 w-full bg-slate-950">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    let allStocks = [];
+    let currentFilter = 'ALL';
+    let currentSort = { col: 'score', desc: true };
+
+    // Badge styling map
+    const BADGES = {
+      'CB': { label: 'Committed Buyers', class: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
+      'M10': { label: 'M10 Pullback', class: 'bg-sky-500/15 text-sky-400 border-sky-500/30' },
+      'TANGLE': { label: 'EMA Tangle', class: 'bg-purple-500/15 text-purple-400 border-purple-500/30' },
+      '52W_HIGH': { label: '52W High', class: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
+      'HIGH_RS': { label: 'RS Leader', class: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30' },
+      'VOL_SHOCK': { label: '3x+ Vol', class: 'bg-rose-500/15 text-rose-400 border-rose-500/30' },
+    };
+
+    async function loadData() {
+      try {
+        const res = await fetch('data.json?t=' + Date.now());
+        if (!res.ok) throw new Error('data.json not found');
+        const data = await res.json();
+        
+        document.getElementById('last-updated').textContent = data.metadata?.last_updated_ist || 'Just now';
+        document.getElementById('stat-total').textContent = data.metadata?.total_scanned || '--';
+        document.getElementById('stat-matched').textContent = data.metadata?.matches_found || data.stocks.length;
+
+        allStocks = data.stocks || [];
+        updateCounts();
+        renderTable();
+      } catch (err) {
+        console.warn('Could not load data.json, loading demo fallbacks...', err);
+        loadFallbackDemoData();
+      }
+    }
+
+    function updateCounts() {
+      document.getElementById('count-all').textContent = allStocks.length;
+
+      let cbCount = 0, m10Count = 0, w52Count = 0, rsCount = 0;
+      allStocks.forEach(s => {
+        const tags = s.setup_tags || [];
+        if (tags.includes('CB')) cbCount++;
+        if (tags.includes('M10')) m10Count++;
+        if (tags.includes('52W_HIGH')) w52Count++;
+        if (tags.includes('HIGH_RS')) rsCount++;
+      });
+
+      document.getElementById('stat-cb').textContent = cbCount;
+      document.getElementById('stat-m10').textContent = m10Count;
+      document.getElementById('stat-52w').textContent = w52Count;
+      document.getElementById('stat-rs').textContent = rsCount;
+    }
+
+    function setFilter(filterTag) {
+      currentFilter = filterTag;
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.className = 'tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition';
+      });
+      const activeBtn = document.getElementById(`tab-${filterTag}`);
+      if (activeBtn) {
+        activeBtn.className = 'tab-btn px-3 py-1.5 rounded-lg font-medium transition bg-emerald-500 text-slate-950 font-semibold shadow-sm';
+      }
+      renderTable();
+    }
+
+    function handleSearch() {
+      renderTable();
+    }
+
+    function sortTable(col) {
+      if (currentSort.col === col) {
+        currentSort.desc = !currentSort.desc;
+      } else {
+        currentSort.col = col;
+        currentSort.desc = true;
+      }
+      renderTable();
+    }
+
+    function getFilteredStocks() {
+      const q = (document.getElementById('search-input').value || '').trim().toUpperCase();
+
+      return allStocks.filter(s => {
+        // Tag filter
+        if (currentFilter !== 'ALL') {
+          if (!s.setup_tags || !s.setup_tags.includes(currentFilter)) {
+            return false;
+          }
+        }
+        // Search filter
+        if (q && !s.symbol.toUpperCase().includes(q)) {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    function renderTable() {
+      const stocks = getFilteredStocks();
+
+      // Sort
+      stocks.sort((a, b) => {
+        let vA = a[currentSort.col];
+        let vB = b[currentSort.col];
+        if (typeof vA === 'string') {
+          return currentSort.desc ? vB.localeCompare(vA) : vA.localeCompare(vB);
+        }
+        vA = vA === null || vA === undefined ? -999999 : vA;
+        vB = vB === null || vB === undefined ? -999999 : vB;
+        return currentSort.desc ? (vB - vA) : (vA - vB);
+      });
+
+      const tbody = document.getElementById('table-body');
+      const empty = document.getElementById('empty-state');
+      document.getElementById('showing-count').textContent = stocks.length;
+
+      if (stocks.length === 0) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      tbody.innerHTML = stocks.map(s => {
+        const isUp = s.change_pct >= 0;
+        const changeClass = isUp ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-rose-400 bg-rose-500/10 border-rose-500/20';
+        const changeSign = isUp ? '+' : '';
+
+        const badgesHtml = (s.setup_tags || []).map(t => {
+          const cfg = BADGES[t] || { label: t, class: 'bg-slate-700 text-slate-300' };
+          return `<span class="px-2 py-0.5 text-[10px] font-semibold border rounded-md whitespace-nowrap ${cfg.class}">${cfg.label}</span>`;
+        }).join(' ');
+
+        return `
+          <tr class="hover:bg-slate-800/40 transition group">
+            <td class="py-3 px-4 font-mono font-bold text-white text-sm">
+              <span class="hover:text-emerald-400 cursor-pointer" onclick="openChartModal('${s.symbol}')">${s.symbol}</span>
+            </td>
+            <td class="py-3 px-3 text-right font-mono font-medium text-slate-200">₹${s.price.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+            <td class="py-3 px-3 text-right">
+              <span class="px-2 py-0.5 rounded-md font-mono text-[11px] font-semibold border ${changeClass}">
+                ${changeSign}${s.change_pct}%
+              </span>
+            </td>
+            <td class="py-3 px-3 text-right font-mono font-bold ${s.rvol >= 2.0 ? 'text-emerald-400' : 'text-slate-300'}">${s.rvol}x</td>
+            <td class="py-3 px-3 text-right font-mono text-slate-300">${s.clv}</td>
+            <td class="py-3 px-3 text-right font-mono ${s.dist_52w_high >= -3.0 ? 'text-amber-400 font-semibold' : 'text-slate-400'}">${s.dist_52w_high}%</td>
+            <td class="py-3 px-3 text-right font-mono ${s.rs_1m >= 5.0 ? 'text-indigo-400 font-semibold' : 'text-slate-400'}">${s.rs_1m >= 0 ? '+' : ''}${s.rs_1m}</td>
+            <td class="py-3 px-4 flex flex-wrap gap-1 items-center max-w-xs">
+              ${badgesHtml}
+            </td>
+            <td class="py-3 px-3 text-center">
+              <span class="w-7 h-7 inline-flex items-center justify-center rounded-full bg-slate-800 font-mono font-bold text-[11px] ${s.score >= 30 ? 'text-emerald-400 border border-emerald-500/30' : 'text-slate-300'}">
+                ${s.score}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-center">
+              <div class="inline-flex items-center space-x-1.5">
+                <button onclick="openChartModal('${s.symbol}')" title="View Chart Preview" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                  <i data-lucide="line-chart" class="w-3.5 h-3.5"></i>
+                </button>
+                <a href="${s.chart_tv}" target="_blank" title="Open TradingView" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                  <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                </a>
+                <a href="${s.chart_fyers}" target="_blank" title="Trade on FYERS" class="p-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-400 transition">
+                  <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function openChartModal(symbol) {
+      document.getElementById('modal-ticker').textContent = symbol;
+      document.getElementById('modal-tv-link').href = `https://in.tradingview.com/chart/?symbol=NSE%3A${symbol}`;
+      document.getElementById('modal-fyers-link').href = `https://trade.fyers.in/?symbol=NSE:${symbol}-EQ`;
+
+      const container = document.getElementById('tv-widget-container');
+      container.innerHTML = `
+        <div class="tradingview-widget-container w-full h-full">
+          <iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_widget&symbol=NSE%3A${symbol}&interval=D&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=[]&theme=dark&style=1&timezone=Asia%2FKolkata&withdateranges=1" 
+                  class="w-full h-full border-0"></iframe>
+        </div>
+      `;
+
+      document.getElementById('chart-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeModal() {
+      document.getElementById('chart-modal').classList.add('hidden');
+      document.getElementById('tv-widget-container').innerHTML = '';
+    }
+
+    function refreshData() {
+      loadData();
+    }
+
+    function loadFallbackDemoData() {
+      // Demo stocks if running without local web server
+      allStocks = [
+        { symbol: "KALYANKJIL", price: 742.50, change_pct: 4.8, rvol: 2.4, clv: 0.88, dist_52w_high: -1.2, rs_1m: 14.5, score: 45, setup_tags: ["CB", "52W_HIGH", "HIGH_RS"], chart_tv: "https://in.tradingview.com/chart/?symbol=NSE%3AKALYANKJIL", chart_fyers: "https://trade.fyers.in/?symbol=NSE:KALYANKJIL-EQ" },
+        { symbol: "WABAG", price: 1820.00, change_pct: 6.2, rvol: 3.2, clv: 0.92, dist_52w_high: 0.0, rs_1m: 22.0, score: 50, setup_tags: ["CB", "52W_HIGH", "VOL_SHOCK"], chart_tv: "https://in.tradingview.com/chart/?symbol=NSE%3AWABAG", chart_fyers: "https://trade.fyers.in/?symbol=NSE:WABAG-EQ" },
+        { symbol: "TRENT", price: 6850.00, change_pct: 1.8, rvol: 0.9, clv: 0.72, dist_52w_high: -2.8, rs_1m: 18.2, score: 30, setup_tags: ["M10", "HIGH_RS"], chart_tv: "https://in.tradingview.com/chart/?symbol=NSE%3ATRENT", chart_fyers: "https://trade.fyers.in/?symbol=NSE:TRENT-EQ" },
+        { symbol: "DIXON", price: 15400.00, change_pct: 3.5, rvol: 2.1, clv: 0.85, dist_52w_high: -0.5, rs_1m: 16.0, score: 40, setup_tags: ["CB", "52W_HIGH"], chart_tv: "https://in.tradingview.com/chart/?symbol=NSE%3ADIXON", chart_fyers: "https://trade.fyers.in/?symbol=NSE:DIXON-EQ" },
+        { symbol: "BOMDYEING", price: 215.40, change_pct: 5.4, rvol: 3.8, clv: 0.80, dist_52w_high: -4.5, rs_1m: 11.2, score: 35, setup_tags: ["CB", "VOL_SHOCK"], chart_tv: "https://in.tradingview.com/chart/?symbol=NSE%3ABOMDYEING", chart_fyers: "https://trade.fyers.in/?symbol=NSE:BOMDYEING-EQ" }
+      ];
+      document.getElementById('last-updated').textContent = 'Demo Mode (Offline)';
+      document.getElementById('stat-total').textContent = '169';
+      document.getElementById('stat-matched').textContent = allStocks.length;
+      updateCounts();
+      renderTable();
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      loadData();
+    });
+  </script>
+</body>
+</html>
+
